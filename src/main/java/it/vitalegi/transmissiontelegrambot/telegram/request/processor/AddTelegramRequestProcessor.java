@@ -16,7 +16,7 @@ public class AddTelegramRequestProcessor extends AbstractTelegramRequestProcesso
 
 	@Override
 	public boolean match(RequestWrapper request) {
-		return StringUtil.isNotNull(request.getDocumentContent());
+		return request.hasDocument();
 	}
 
 	@Override
