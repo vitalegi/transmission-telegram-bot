@@ -1,46 +1,49 @@
 package it.vitalegi.transmissiontelegrambot.telegram;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.Header;
-import org.apache.http.util.EntityUtils;
+import java.util.Map;
 
 public class HttpResponseWrapperImpl implements HttpResponseWrapper {
 
-	HttpResponse response;
+	int status;
+	String statusPhrase;
+	Map<String, List<String>> headers;
+	String body;
 
-	public HttpResponseWrapperImpl(HttpResponse response) {
+	public HttpResponseWrapperImpl(int status, String statusPhrase, Map<String, List<String>> headers, String body) {
 		super();
-		this.response = response;
+		this.status = status;
+		this.statusPhrase = statusPhrase;
+		this.headers = headers;
+		this.body = body;
 	}
 
 	@Override
 	public List<String> getHeaderValues(String name) {
-		Header[] headers = response.getHeaders(name);
-		return Arrays.asList(headers).stream()//
-				.map(Header::getValue).collect(Collectors.toList());
+		return headers.get(name);
 	}
 
 	@Override
 	public int getStatus() {
-		return response.getStatusLine().getStatusCode();
+		return status;
 	}
 
 	@Override
 	public String getReasonPhrase() {
-		return response.getStatusLine().getReasonPhrase();
+		return statusPhrase;
+	}
+
+	public Map<String, List<String>> getHeaders() {
+		return headers;
 	}
 
 	@Override
 	public String getPayload() {
-		try {
-			return EntityUtils.toString(response.getEntity(), "UTF-8");
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		return body;
+//		try {
+//			return EntityUtils.toString(response.getEntity(), "UTF-8");
+//		} catch (IOException e) {
+//			throw new RuntimeException(e);
+//		}
 	}
 }

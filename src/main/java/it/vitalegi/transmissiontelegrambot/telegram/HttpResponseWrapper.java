@@ -1,6 +1,7 @@
 package it.vitalegi.transmissiontelegrambot.telegram;
 
 import java.util.List;
+import java.util.Map;
 
 public interface HttpResponseWrapper {
 
@@ -8,8 +9,9 @@ public interface HttpResponseWrapper {
 
 	int getStatus();
 
-	public String getReasonPhrase();
+	String getReasonPhrase();
 
 	List<String> getHeaderValues(String name);
 
+	Map<String, List<String>> getHeaders();
 }
