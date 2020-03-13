@@ -9,10 +9,14 @@ import it.vitalegi.transmissiontelegrambot.action.Action;
 import it.vitalegi.transmissiontelegrambot.action.ActionMethod;
 import it.vitalegi.transmissiontelegrambot.action.RequestFields;
 import it.vitalegi.transmissiontelegrambot.telegram.request.RequestWrapper;
-import it.vitalegi.transmissiontelegrambot.util.StringUtil;
 
 @Service
 public class AddTelegramRequestProcessor extends AbstractTelegramRequestProcessor {
+
+	protected String encodeFile(byte[] fileContent) {
+		String encoded = Base64.getEncoder().withoutPadding().encodeToString(fileContent);
+		return encoded;
+	}
 
 	@Override
 	public boolean match(RequestWrapper request) {
@@ -29,11 +33,5 @@ public class AddTelegramRequestProcessor extends AbstractTelegramRequestProcesso
 		action.setArguments(json);
 
 		return action;
-	}
-
-	protected String encodeFile(String fileContent) {
-		byte[] bytes = fileContent.getBytes();
-		String encoded = Base64.getEncoder().encodeToString(bytes);
-		return encoded;
 	}
 }

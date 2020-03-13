@@ -1,6 +1,6 @@
-package it.vitalegi.transmissiontelegrambot.telegram;
+package it.vitalegi.transmissiontelegrambot.transmission;
 
-import static it.vitalegi.transmissiontelegrambot.telegram.TelegramCallServiceImpl.X_TRANSMISSION_SESSION_ID;
+import static it.vitalegi.transmissiontelegrambot.transmission.TransmissionCallServiceImpl.X_TRANSMISSION_SESSION_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -17,20 +17,34 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import it.vitalegi.transmissiontelegrambot.action.Action;
 import it.vitalegi.transmissiontelegrambot.action.ActionMethod;
+import it.vitalegi.transmissiontelegrambot.transmission.TransmissionCallServiceImpl;
+import it.vitalegi.transmissiontelegrambot.transmission.http.HttpClientCaller;
+import it.vitalegi.transmissiontelegrambot.transmission.http.HttpResponseWrapper;
 import it.vitalegi.transmissiontelegrambot.util.HttpResponseMockUtil;
 import it.vitalegi.transmissiontelegrambot.util.Json;
 
 @SpringBootTest
-public class TelegramCallServiceTest {
+public class TransmissionCallServiceTest {
 
 	public static final String X_SESSION_ID_OK = "transmission-session-id-ok";
-	public static final String X_SESSION_ID_KO = TelegramCallServiceImpl.X_TRANSMISSION_DEFAULT;
+	public static final String X_SESSION_ID_KO = TransmissionCallServiceImpl.X_TRANSMISSION_DEFAULT;
 
 	@MockBean
 	HttpClientCaller httpCaller;
 
 	@Autowired
-	TelegramCallServiceImpl telegramCallService;
+	TransmissionCallServiceImpl telegramCallService;
+
+	private Action action(ActionMethod method, JSONObject arguments) {
+		Action action = new Action();
+		action.setMethod(method);
+		action.setArguments(arguments);
+		return action;
+	}
+
+	private String getHeaderValue(HttpPost request, String name) {
+		return request.getHeaders(name)[0].getValue();
+	}
 
 	@Test
 	void testWrongXTransmissionSessionIdShouldUpdateId() throws IOException {
@@ -50,16 +64,5 @@ public class TelegramCallServiceTest {
 
 		assertEquals(X_SESSION_ID_KO, getHeaderValue(requestValues.get(0), X_TRANSMISSION_SESSION_ID));
 		assertEquals(X_SESSION_ID_OK, getHeaderValue(requestValues.get(1), X_TRANSMISSION_SESSION_ID));
-	}
-
-	private String getHeaderValue(HttpPost request, String name) {
-		return request.getHeaders(name)[0].getValue();
-	}
-
-	private Action action(ActionMethod method, JSONObject arguments) {
-		Action action = new Action();
-		action.setMethod(method);
-		action.setArguments(arguments);
-		return action;
 	}
 }

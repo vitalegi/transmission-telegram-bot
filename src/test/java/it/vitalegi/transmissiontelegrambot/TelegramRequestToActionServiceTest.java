@@ -24,14 +24,34 @@ public class TelegramRequestToActionServiceTest {
 	@Autowired
 	RequestWrapperFactory requestFactory;
 
+	protected void assertEqualsJSON(JSONObject expected, JSONObject actual) {
+		if (expected.toString().equals(actual.toString())) {
+			return;
+		}
+		throw new AssertionFailedError("", expected, actual);
+	}
+
 	@Test
-	void testRequestedListResultsList() throws Exception {
-		Action action = service.process(requestFactory.getInstance("list"));
+	void testRequestedAddResultsAdd() throws Exception {
+		Action action = service.process(requestFactory.getInstance("filename123.txt", "hello world".getBytes()));
 
 		assertNotNull(action);
-		assertEquals(ActionMethod.GET, action.getMethod());
 		assertNotNull(action.getArguments());
-		assertEqualsJSON(new JSONObject(), action.getArguments());
+		assertEquals(ActionMethod.ADD, action.getMethod());
+		assertEquals("aGVsbG8gd29ybGQ=", action.getArguments().getString(RequestFields.METAINFO));
+	}
+
+	@Test
+	void testRequestedDeleteResultsRemove() throws Exception {
+		Action action = service.process(requestFactory.getInstance("delete 5"));
+
+		assertNotNull(action);
+		assertNotNull(action.getArguments());
+		assertEquals(ActionMethod.REMOVE, action.getMethod());
+		assertEquals(true, action.getArguments().getBoolean(RequestFields.DELETE_LOCAL_DATA));
+		assertNotNull(action.getArguments().getJSONArray(RequestFields.IDS));
+		assertEquals(1, action.getArguments().getJSONArray(RequestFields.IDS).length());
+		assertEquals("5", action.getArguments().getJSONArray(RequestFields.IDS).get(0));
 	}
 
 	@Test
@@ -47,6 +67,16 @@ public class TelegramRequestToActionServiceTest {
 	}
 
 	@Test
+	void testRequestedListResultsList() throws Exception {
+		Action action = service.process(requestFactory.getInstance("list"));
+
+		assertNotNull(action);
+		assertEquals(ActionMethod.GET, action.getMethod());
+		assertNotNull(action.getArguments());
+		assertEqualsJSON(new JSONObject(), action.getArguments());
+	}
+
+	@Test
 	void testRequestedListWithSpacesResultsList() throws Exception {
 		Action action = service.process(requestFactory.getInstance("   list    "));
 
@@ -57,13 +87,17 @@ public class TelegramRequestToActionServiceTest {
 	}
 
 	@Test
-	void testRequestedAddResultsAdd() throws Exception {
-		Action action = service.process(requestFactory.getInstance("filename123.txt", "hello world"));
+	void testRequestedRemoveResultsRemove() throws Exception {
+		Action action = service.process(requestFactory.getInstance("remove 5"));
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
-		assertEquals(ActionMethod.ADD, action.getMethod());
-		assertEquals("aGVsbG8gd29ybGQ=", action.getArguments().getString(RequestFields.METAINFO));
+		assertEquals(ActionMethod.REMOVE, action.getMethod());
+
+		assertEquals(false, action.getArguments().getBoolean(RequestFields.DELETE_LOCAL_DATA));
+		assertNotNull(action.getArguments().getJSONArray(RequestFields.IDS));
+		assertEquals(1, action.getArguments().getJSONArray(RequestFields.IDS).length());
+		assertEquals("5", action.getArguments().getJSONArray(RequestFields.IDS).get(0));
 	}
 
 	@Test
@@ -88,39 +122,5 @@ public class TelegramRequestToActionServiceTest {
 		assertNotNull(action.getArguments().getJSONArray(RequestFields.IDS));
 		assertEquals(1, action.getArguments().getJSONArray(RequestFields.IDS).length());
 		assertEquals("5", action.getArguments().getJSONArray(RequestFields.IDS).get(0));
-	}
-
-	@Test
-	void testRequestedRemoveResultsRemove() throws Exception {
-		Action action = service.process(requestFactory.getInstance("remove 5"));
-
-		assertNotNull(action);
-		assertNotNull(action.getArguments());
-		assertEquals(ActionMethod.REMOVE, action.getMethod());
-
-		assertEquals(false, action.getArguments().getBoolean(RequestFields.DELETE_LOCAL_DATA));
-		assertNotNull(action.getArguments().getJSONArray(RequestFields.IDS));
-		assertEquals(1, action.getArguments().getJSONArray(RequestFields.IDS).length());
-		assertEquals("5", action.getArguments().getJSONArray(RequestFields.IDS).get(0));
-	}
-
-	@Test
-	void testRequestedDeleteResultsRemove() throws Exception {
-		Action action = service.process(requestFactory.getInstance("delete 5"));
-
-		assertNotNull(action);
-		assertNotNull(action.getArguments());
-		assertEquals(ActionMethod.REMOVE, action.getMethod());
-		assertEquals(true, action.getArguments().getBoolean(RequestFields.DELETE_LOCAL_DATA));
-		assertNotNull(action.getArguments().getJSONArray(RequestFields.IDS));
-		assertEquals(1, action.getArguments().getJSONArray(RequestFields.IDS).length());
-		assertEquals("5", action.getArguments().getJSONArray(RequestFields.IDS).get(0));
-	}
-
-	protected void assertEqualsJSON(JSONObject expected, JSONObject actual) {
-		if (expected.toString().equals(actual.toString())) {
-			return;
-		}
-		throw new AssertionFailedError("", expected, actual);
 	}
 }

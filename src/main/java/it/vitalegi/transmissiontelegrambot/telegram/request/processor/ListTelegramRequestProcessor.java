@@ -25,7 +25,6 @@ public class ListTelegramRequestProcessor extends AbstractTelegramRequestProcess
 		JSONObject json = new JSONObject();
 		action.setArguments(json);
 
-
 		return action;
 	}
 }

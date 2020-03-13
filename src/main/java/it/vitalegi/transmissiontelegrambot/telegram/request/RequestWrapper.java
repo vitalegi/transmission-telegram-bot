@@ -4,15 +4,15 @@ import java.util.List;
 
 public interface RequestWrapper {
 
-	public List<String> tokenizeText();
-
-	public String getText();
-
-	public boolean hasText();
-
-	public String getDocumentContent();
+	public byte[] getDocumentContent();
 
 	public String getDocumentName();
 
+	public String getText();
+
 	public boolean hasDocument();
+
+	public boolean hasText();
+
+	public List<String> tokenizeText();
 }

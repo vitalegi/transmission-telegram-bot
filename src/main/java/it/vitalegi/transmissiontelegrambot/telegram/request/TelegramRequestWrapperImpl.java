@@ -23,29 +23,22 @@ public class TelegramRequestWrapperImpl implements RequestWrapper {
 	DefaultAbsSender absSender;
 	Message message;
 
-	protected TelegramRequestWrapperImpl(DefaultAbsSender absSender, Message message) {
+	public TelegramRequestWrapperImpl(DefaultAbsSender absSender, Message message) {
 		super();
 		this.absSender = absSender;
 		this.message = message;
 	}
 
-	@Override
-	public boolean hasText() {
-		return message.hasText();
+	protected java.io.File downloadFile(String filePath) {
+		try {
+			return absSender.downloadFile(filePath);
+		} catch (TelegramApiException e) {
+			throw new RuntimeException("Error downloading document " + filePath);
+		}
 	}
 
 	@Override
-	public String getText() {
-		return message.getText();
-	}
-
-	@Override
-	public boolean hasDocument() {
-		return message.hasDocument();
-	}
-
-	@Override
-	public String getDocumentContent() {
+	public byte[] getDocumentContent() {
 		Document document = message.getDocument();
 
 		log.info("File name: {}", document.getFileName());
@@ -56,7 +49,7 @@ public class TelegramRequestWrapperImpl implements RequestWrapper {
 
 		java.io.File file = downloadFile(filePath);
 		try {
-			return new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
+			return Files.readAllBytes(Paths.get(file.getAbsolutePath()));
 		} catch (IOException e) {
 			throw new RuntimeException("Error reading " + document.getFileId() + " " + document.getFileName(), e);
 		}
@@ -67,11 +60,6 @@ public class TelegramRequestWrapperImpl implements RequestWrapper {
 		Document document = message.getDocument();
 
 		return document.getFileName();
-	}
-
-	@Override
-	public List<String> tokenizeText() {
-		return StringUtil.tokenize(getText());
 	}
 
 	protected String getFilePath(Document document) {
@@ -86,11 +74,23 @@ public class TelegramRequestWrapperImpl implements RequestWrapper {
 		}
 	}
 
-	protected java.io.File downloadFile(String filePath) {
-		try {
-			return absSender.downloadFile(filePath);
-		} catch (TelegramApiException e) {
-			throw new RuntimeException("Error downloading document " + filePath);
-		}
+	@Override
+	public String getText() {
+		return message.getText();
+	}
+
+	@Override
+	public boolean hasDocument() {
+		return message.hasDocument();
+	}
+
+	@Override
+	public boolean hasText() {
+		return message.hasText();
+	}
+
+	@Override
+	public List<String> tokenizeText() {
+		return StringUtil.tokenize(getText());
 	}
 }

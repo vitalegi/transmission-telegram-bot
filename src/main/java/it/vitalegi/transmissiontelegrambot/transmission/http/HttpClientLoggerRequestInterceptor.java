@@ -1,4 +1,4 @@
-package it.vitalegi.transmissiontelegrambot.telegram;
+package it.vitalegi.transmissiontelegrambot.transmission.http;
 
 import java.io.IOException;
 

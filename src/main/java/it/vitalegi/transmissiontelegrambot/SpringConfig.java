@@ -8,7 +8,7 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import it.vitalegi.transmissiontelegrambot.telegram.TransmissionHandlers;
+import it.vitalegi.transmissiontelegrambot.transmission.TransmissionHandlers;
 
 @Configuration
 @Profile("prod")

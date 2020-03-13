@@ -6,12 +6,12 @@ import java.util.Scanner;
 
 public class StringUtil {
 
-	public static boolean isNullOrEmpty(String value) {
-		return value == null || value.equals("");
-	}
-
 	public static boolean isNotNull(String value) {
 		return !isNullOrEmpty(value);
+	}
+
+	public static boolean isNullOrEmpty(String value) {
+		return value == null || value.equals("");
 	}
 
 	public static List<String> tokenize(String text) {

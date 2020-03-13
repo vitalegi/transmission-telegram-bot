@@ -1,4 +1,4 @@
-package it.vitalegi.transmissiontelegrambot.telegram;
+package it.vitalegi.transmissiontelegrambot.transmission;
 
 import java.io.IOException;
 
@@ -13,15 +13,17 @@ import org.springframework.stereotype.Service;
 
 import it.vitalegi.transmissiontelegrambot.action.Action;
 import it.vitalegi.transmissiontelegrambot.exception.InvalidHeaderException;
+import it.vitalegi.transmissiontelegrambot.transmission.http.HttpClientCaller;
+import it.vitalegi.transmissiontelegrambot.transmission.http.HttpResponseWrapper;
 import it.vitalegi.transmissiontelegrambot.util.ListUtil;
 
 @Service
-public class TelegramCallServiceImpl {
-
-	Logger log = LoggerFactory.getLogger(TelegramCallServiceImpl.class);
+public class TransmissionCallServiceImpl {
 
 	public final static String X_TRANSMISSION_SESSION_ID = "X-Transmission-Session-Id";
+
 	public final static String X_TRANSMISSION_DEFAULT = "x-transmission-session-id-missing";
+	Logger log = LoggerFactory.getLogger(TransmissionCallServiceImpl.class);
 
 	@Value("${telegram.url}")
 	protected String url;
@@ -39,6 +41,21 @@ public class TelegramCallServiceImpl {
 		}
 	}
 
+	protected JSONObject createBody(Action action) {
+		JSONObject body = new JSONObject();
+		body.put("method", action.getMethod().getAction());
+		body.put("arguments", action.getArguments());
+		return body;
+	}
+
+	protected HttpPost createRequest(Action action, String xTransmissionSessionId) throws IOException {
+		HttpPost request = new HttpPost(url);
+		request.addHeader("accept", "application/json");
+		request.addHeader(X_TRANSMISSION_SESSION_ID, xTransmissionSessionId);
+		request.setEntity(new StringEntity(createBody(action).toString()));
+		return request;
+	}
+
 	protected JSONObject doCall(Action action) throws IOException {
 
 		HttpResponseWrapper response = null;
@@ -54,19 +71,22 @@ public class TelegramCallServiceImpl {
 		}
 	}
 
-	protected HttpPost createRequest(Action action, String xTransmissionSessionId) throws IOException {
-		HttpPost request = new HttpPost(url);
-		request.addHeader("accept", "application/json");
-		request.addHeader(X_TRANSMISSION_SESSION_ID, xTransmissionSessionId);
-		request.setEntity(new StringEntity(createBody(action).toString()));
-		return request;
-	}
+	protected JSONObject processResponse(HttpResponseWrapper response) {
+		if (response.getStatus() == 409) {
+			throw new InvalidHeaderException(X_TRANSMISSION_SESSION_ID + " is not valid");
+		}
+		if (response.getStatus() != 200) {
+			throw new RuntimeException("Error " + response.getStatus() + ": " + response.getReasonPhrase());
+		}
+		byte[] bytes = response.getPayload();
+		String rawPayload = new String(bytes);
+		JSONObject payload = new JSONObject(rawPayload);
 
-	protected JSONObject createBody(Action action) {
-		JSONObject body = new JSONObject();
-		body.put("method", action.getMethod().getAction());
-		body.put("arguments", action.getArguments());
-		return body;
+		String result = payload.getString("result");
+		if (!"success".equals(result)) {
+			throw new RuntimeException("Error " + result);
+		}
+		return payload;
 	}
 
 	protected String updateXTransmission(HttpResponseWrapper response) {
@@ -76,21 +96,5 @@ public class TelegramCallServiceImpl {
 		log.info("New value: {}", newXTransmissionSessionId);
 		this.xTransmissionSessionId = newXTransmissionSessionId;
 		return newXTransmissionSessionId;
-	}
-
-	protected JSONObject processResponse(HttpResponseWrapper response) {
-		if (response.getStatus() == 409) {
-			throw new InvalidHeaderException(X_TRANSMISSION_SESSION_ID + " is not valid");
-		}
-		if (response.getStatus() != 200) {
-			throw new RuntimeException("Error " + response.getStatus() + ": " + response.getReasonPhrase());
-		}
-		JSONObject payload = new JSONObject(response.getPayload());
-
-		String result = payload.getString("result");
-		if (!"success".equals(result)) {
-			throw new RuntimeException("Error " + result);
-		}
-		return payload;
 	}
 }

@@ -1,8 +1,6 @@
-package it.vitalegi.transmissiontelegrambot.telegram;
+package it.vitalegi.transmissiontelegrambot.transmission.http;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +13,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,6 @@ public class HttpClientCallerImpl implements HttpClientCaller {
 
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create()//
 				.addInterceptorLast(new HttpClientLoggerRequestInterceptor(id))//
-				//.addInterceptorLast(new HttpClientLoggerResponseInterceptor(id))//
 				.build()) {
 			CloseableHttpResponse response = httpClient.execute(request);
 
@@ -43,6 +41,25 @@ public class HttpClientCallerImpl implements HttpClientCaller {
 			logResponse(id, responseWrapper);
 			return responseWrapper;
 		}
+	}
+
+	protected byte[] getPayload(HttpEntity entity) {
+		try {
+			byte[] bytes = EntityUtils.toByteArray(entity);
+			return bytes;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected void logResponse(String id, HttpResponseWrapper responseWrapper) {
+		log.info("{} RESPONSE-------------------", id);
+		log.info("{} Status: {}, {}", id, responseWrapper.getStatus(), responseWrapper.getReasonPhrase());
+		responseWrapper.getHeaders().entrySet().forEach(h -> {
+			log.info("{} Header: {}={}", id, h.getKey(), h.getValue());
+		});
+		log.info("{} Body:\n{}", id, responseWrapper.getPayload());
+		log.info("{} ---------------------------", id);
 	}
 
 	protected HttpResponseWrapperImpl process(CloseableHttpResponse response) {
@@ -56,27 +73,7 @@ public class HttpClientCallerImpl implements HttpClientCaller {
 			}
 			headers.get(header.getName()).add(header.getValue());
 		}
-		String body = toString(response.getEntity());
-		return new HttpResponseWrapperImpl(status, reasonPhrase, headers, body);
-	}
-
-	protected void logResponse(String id, HttpResponseWrapper responseWrapper) {
-		log.info("{} RESPONSE-------------------", id);
-		log.info("{} Status: {}, {}", id, responseWrapper.getStatus(), responseWrapper.getReasonPhrase());
-		responseWrapper.getHeaders().entrySet().forEach(h -> {
-			log.info("{} Header: {}={}", id, h.getKey(), h.getValue());
-		});
-		log.info("{} Body:\n{}", id, responseWrapper.getPayload());
-		log.info("{} ---------------------------", id);
-	}
-
-	protected String toString(HttpEntity entity) {
-		OutputStream os = new ByteArrayOutputStream();
-		try {
-			entity.writeTo(os);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		return os.toString();
+		byte[] payload = getPayload(response.getEntity());
+		return new HttpResponseWrapperImpl(status, reasonPhrase, headers, payload);
 	}
 }

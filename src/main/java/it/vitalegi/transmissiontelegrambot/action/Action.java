@@ -7,19 +7,19 @@ public class Action {
 	ActionMethod method;
 	JSONObject arguments;
 
-	public ActionMethod getMethod() {
-		return method;
-	}
-
-	public void setMethod(ActionMethod method) {
-		this.method = method;
-	}
-
 	public JSONObject getArguments() {
 		return arguments;
 	}
 
+	public ActionMethod getMethod() {
+		return method;
+	}
+
 	public void setArguments(JSONObject arguments) {
 		this.arguments = arguments;
+	}
+
+	public void setMethod(ActionMethod method) {
+		this.method = method;
 	}
 }

@@ -4,23 +4,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Json {
+	public static Json init() {
+		return new Json();
+	}
+
 	JSONObject json;
 
 	public Json() {
 		json = new JSONObject();
 	}
 
-	public static Json init() {
-		return new Json();
+	public JSONObject build() {
+		return json;
 	}
 
-	public Json put(String name, String value) {
-		try {
-			json.put(name, value);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
-		return this;
+	public String buildString() {
+		return json.toString();
 	}
 
 	public Json put(String name, JSONObject value) {
@@ -32,11 +31,12 @@ public class Json {
 		return this;
 	}
 
-	public JSONObject build() {
-		return json;
-	}
-
-	public String buildString() {
-		return json.toString();
+	public Json put(String name, String value) {
+		try {
+			json.put(name, value);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return this;
 	}
 }

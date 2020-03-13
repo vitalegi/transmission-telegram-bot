@@ -12,15 +12,6 @@ import it.vitalegi.transmissiontelegrambot.util.ListUtil;
 
 public abstract class AbstractTelegramRequestProcessor implements TelegramRequestProcessor {
 
-	protected boolean matchFirstTokenCaseInsensitive(RequestWrapper request, String expected) {
-		List<String> tokenized = request.tokenizeText();
-		if (tokenized.isEmpty()) {
-			return false;
-		}
-		String actual = tokenized.get(0);
-		return expected.toUpperCase().equals(actual.toUpperCase());
-	}
-
 	protected String getMandatoryNumberParam(List<String> params, int index) {
 		String param = getMandatoryParam(params, index);
 		try {
@@ -37,6 +28,15 @@ public abstract class AbstractTelegramRequestProcessor implements TelegramReques
 			throw new InvalidTelegramRequestException("Param is missing");
 		}
 		return param;
+	}
+
+	protected boolean matchFirstTokenCaseInsensitive(RequestWrapper request, String expected) {
+		List<String> tokenized = request.tokenizeText();
+		if (tokenized.isEmpty()) {
+			return false;
+		}
+		String actual = tokenized.get(0);
+		return expected.toUpperCase().equals(actual.toUpperCase());
 	}
 
 	protected void setIds(JSONObject json, String id) {
