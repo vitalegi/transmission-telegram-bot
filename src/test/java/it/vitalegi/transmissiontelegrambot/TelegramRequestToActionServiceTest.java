@@ -38,7 +38,7 @@ public class TelegramRequestToActionServiceTest {
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
 		assertEquals(ActionMethod.ADD, action.getMethod());
-		assertEquals("aGVsbG8gd29ybGQ=", action.getArguments().getString(RequestFields.METAINFO));
+		assertEquals("aGVsbG8gd29ybGQ", action.getArguments().getString(RequestFields.METAINFO));
 	}
 
 	@Test
