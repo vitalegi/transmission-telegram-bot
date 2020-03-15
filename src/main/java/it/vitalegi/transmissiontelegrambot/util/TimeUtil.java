@@ -9,6 +9,9 @@ public class TimeUtil {
 		if (eta == -1) {
 			return "Unknown";
 		}
+		if (eta == -2) {
+			return "---";
+		}
 		if (eta < MINUTE) {
 			return eta + "s";
 		}
