@@ -25,7 +25,7 @@ public class TransmissionCallServiceImpl {
 	public final static String X_TRANSMISSION_DEFAULT = "x-transmission-session-id-missing";
 	Logger log = LoggerFactory.getLogger(TransmissionCallServiceImpl.class);
 
-	@Value("${telegram.url}")
+	@Value("${transmission.url}")
 	protected String url;
 
 	protected String xTransmissionSessionId = X_TRANSMISSION_DEFAULT;

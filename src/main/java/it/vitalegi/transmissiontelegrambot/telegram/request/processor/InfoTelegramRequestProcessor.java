@@ -2,6 +2,7 @@ package it.vitalegi.transmissiontelegrambot.telegram.request.processor;
 
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +29,25 @@ public class InfoTelegramRequestProcessor extends AbstractTelegramRequestProcess
 		action.setMethod(ActionMethod.GET);
 
 		JSONObject json = new JSONObject();
-		setIds(json, id);
-
 		action.setArguments(json);
 
+		setIds(json, id);
+
+		JSONArray array = new JSONArray();
+
+		String[] values = new String[] { "activityDate", "addedDate", "bandwidthPriority", "comment", "corruptEver",
+				"creator", "dateCreated", "desiredAvailable", "doneDate", "downloadDir", "downloadedEver",
+				"downloadLimit", "downloadLimited", "error", "errorString", "eta", "hashString", "haveUnchecked",
+				"haveValid", "honorsSessionLimits", "id", "isFinished", "isPrivate", "leftUntilDone", "magnetLink",
+				"name", "peersConnected", "peersGettingFromUs", "peersSendingToUs", "peer-limit", "pieceCount",
+				"pieceSize", "rateDownload", "rateUpload", "recheckProgress", "secondsDownloading", "secondsSeeding",
+				"seedRatioMode", "seedRatioLimit", "sizeWhenDone", "startDate", "status", "totalSize", "uploadedEver",
+				"uploadLimit", "uploadLimited", "webseeds", "webseedsSendingToUs" };
+
+		for (String value : values) {
+			array.put(value);
+		}
+		json.put("fields", array);
 		return action;
 	}
 }

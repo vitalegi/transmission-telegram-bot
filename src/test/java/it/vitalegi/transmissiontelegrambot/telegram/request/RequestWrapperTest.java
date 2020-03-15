@@ -8,7 +8,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import it.vitalegi.transmissiontelegrambot.SpringTestConfig;
+
+@SpringBootTest(classes = SpringTestConfig.class)
 public class RequestWrapperTest {
 
 	@Test

@@ -1,5 +1,6 @@
 package it.vitalegi.transmissiontelegrambot.telegram.request.processor;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,17 @@ public class ListTelegramRequestProcessor extends AbstractTelegramRequestProcess
 
 		JSONObject json = new JSONObject();
 		action.setArguments(json);
+
+		JSONArray array = new JSONArray();
+
+		String[] values = new String[] { "error", "errorString", "eta", "id", "isFinished", "leftUntilDone", "name",
+				"peersGettingFromUs", "peersSendingToUs", "rateDownload", "rateUpload", "sizeWhenDone", "status",
+				"uploadRatio" };
+
+		for (String value : values) {
+			array.put(value);
+		}
+		json.put("fields", array);
 
 		return action;
 	}

@@ -1,5 +1,6 @@
 package it.vitalegi.transmissiontelegrambot.util;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,9 +32,57 @@ public class Json {
 		return this;
 	}
 
+	public Json putJSONArray(String name, Object... values) {
+		JSONArray array = new JSONArray();
+		for (Object value : values) {
+			array.put(value);
+		}
+		return put(name, array);
+	}
+
+	public Json put(String name, JSONArray value) {
+		try {
+			json.put(name, value);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return this;
+	}
+
+	public Json put(String name, int value) {
+		try {
+			json.put(name, value);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return this;
+	}
+
+	public Json put(String name, boolean value) {
+		try {
+			json.put(name, value);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return this;
+	}
+
 	public Json put(String name, String value) {
 		try {
 			json.put(name, value);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return this;
+	}
+
+	public Json put(String name, String[] values) {
+		try {
+			JSONArray array = new JSONArray();
+			for (String value : values) {
+				array.put(value);
+			}
+			json.put(name, array);
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}

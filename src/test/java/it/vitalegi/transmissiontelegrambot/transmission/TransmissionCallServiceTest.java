@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import it.vitalegi.transmissiontelegrambot.SpringTestConfig;
 import it.vitalegi.transmissiontelegrambot.action.Action;
 import it.vitalegi.transmissiontelegrambot.action.ActionMethod;
 import it.vitalegi.transmissiontelegrambot.transmission.TransmissionCallServiceImpl;
@@ -23,7 +24,7 @@ import it.vitalegi.transmissiontelegrambot.transmission.http.HttpResponseWrapper
 import it.vitalegi.transmissiontelegrambot.util.HttpResponseMockUtil;
 import it.vitalegi.transmissiontelegrambot.util.Json;
 
-@SpringBootTest
+@SpringBootTest(classes = SpringTestConfig.class)
 public class TransmissionCallServiceTest {
 
 	public static final String X_SESSION_ID_OK = "transmission-session-id-ok";

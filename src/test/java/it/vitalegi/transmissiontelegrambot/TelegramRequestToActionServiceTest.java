@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,8 +13,10 @@ import it.vitalegi.transmissiontelegrambot.action.Action;
 import it.vitalegi.transmissiontelegrambot.action.ActionMethod;
 import it.vitalegi.transmissiontelegrambot.action.RequestFields;
 import it.vitalegi.transmissiontelegrambot.telegram.request.RequestWrapperFactory;
+import it.vitalegi.transmissiontelegrambot.util.Json;
+import it.vitalegi.transmissiontelegrambot.util.JsonComparator;
 
-@SpringBootTest
+@SpringBootTest(classes = SpringTestConfig.class)
 public class TelegramRequestToActionServiceTest {
 
 	@Autowired
@@ -24,12 +25,8 @@ public class TelegramRequestToActionServiceTest {
 	@Autowired
 	RequestWrapperFactory requestFactory;
 
-	protected void assertEqualsJSON(JSONObject expected, JSONObject actual) {
-		if (expected.toString().equals(actual.toString())) {
-			return;
-		}
-		throw new AssertionFailedError("", expected, actual);
-	}
+	@Autowired
+	JsonComparator jsonComparator;
 
 	@Test
 	void testRequestedAddResultsAdd() throws Exception {
@@ -64,6 +61,21 @@ public class TelegramRequestToActionServiceTest {
 		assertNotNull(action.getArguments().getJSONArray(RequestFields.IDS));
 		assertEquals(1, action.getArguments().getJSONArray(RequestFields.IDS).length());
 		assertEquals("5", action.getArguments().getJSONArray(RequestFields.IDS).get(0));
+
+		JSONObject expectedArgs = Json.init()
+				.put("fields",
+						new String[] { "activityDate", "addedDate", "bandwidthPriority", "comment", "corruptEver",
+								"creator", "dateCreated", "desiredAvailable", "doneDate", "downloadDir",
+								"downloadedEver", "downloadLimit", "downloadLimited", "error", "errorString", "eta",
+								"hashString", "haveUnchecked", "haveValid", "honorsSessionLimits", "id", "isFinished",
+								"isPrivate", "leftUntilDone", "magnetLink", "name", "peersConnected",
+								"peersGettingFromUs", "peersSendingToUs", "peer-limit", "pieceCount", "pieceSize",
+								"rateDownload", "rateUpload", "recheckProgress", "secondsDownloading", "secondsSeeding",
+								"seedRatioMode", "seedRatioLimit", "sizeWhenDone", "startDate", "status", "totalSize",
+								"uploadedEver", "uploadLimit", "uploadLimited", "webseeds", "webseedsSendingToUs" })
+				.putJSONArray("ids", "5")//
+				.build();
+		jsonComparator.assertEquals(expectedArgs, action.getArguments());
 	}
 
 	@Test
@@ -73,7 +85,14 @@ public class TelegramRequestToActionServiceTest {
 		assertNotNull(action);
 		assertEquals(ActionMethod.GET, action.getMethod());
 		assertNotNull(action.getArguments());
-		assertEqualsJSON(new JSONObject(), action.getArguments());
+
+		JSONObject expectedArgs = Json.init()
+				.put("fields",
+						new String[] { "error", "errorString", "eta", "id", "isFinished", "leftUntilDone", "name",
+								"peersGettingFromUs", "peersSendingToUs", "rateDownload", "rateUpload", "sizeWhenDone",
+								"status", "uploadRatio" })
+				.build();
+		jsonComparator.assertEquals(expectedArgs, action.getArguments());
 	}
 
 	@Test
