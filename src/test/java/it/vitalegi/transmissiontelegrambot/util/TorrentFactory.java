@@ -72,4 +72,14 @@ public class TorrentFactory {
 		obj.put("status", status);
 		return this;
 	}
+
+	public TorrentFactory peersGettingFromUs(Integer peersGettingFromUs) {
+		obj.put("peersGettingFromUs", peersGettingFromUs);
+		return this;
+	}
+
+	public TorrentFactory peersSendingToUs(Integer peersSendingToUs) {
+		obj.put("peersSendingToUs", peersSendingToUs);
+		return this;
+	}
 }

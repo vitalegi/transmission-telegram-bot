@@ -4,8 +4,10 @@ import static it.vitalegi.transmissiontelegrambot.util.BytesUtil.KB;
 import static it.vitalegi.transmissiontelegrambot.util.BytesUtil.MB;
 import static it.vitalegi.transmissiontelegrambot.util.TimeUtil.HOUR;
 import static it.vitalegi.transmissiontelegrambot.util.TimeUtil.MINUTE;
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.hamcrest.CoreMatchers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -35,6 +37,7 @@ public class ListTelegramResponseProcessorTest {
 						.putJSONArray("torrents", TorrentFactory.init().id(5).name("torrent.1")//
 								.leftUntilDone(5 * KB).sizeWhenDone(1 * MB + 100 * KB)//
 								.eta(6 * HOUR + 59 * MINUTE).rateUpload(5 * KB).rateDownload(10 * MB)//
+								.peersGettingFromUs(5).peersSendingToUs(10)//
 								.uploadRatio(1.6).status(4).build()
 
 						).build())//
@@ -66,10 +69,12 @@ public class ListTelegramResponseProcessorTest {
 								TorrentFactory.init().id(5).name("torrent.1")//
 										.leftUntilDone(5 * KB).sizeWhenDone(1 * MB + 100 * KB)//
 										.eta(6 * HOUR + 59 * MINUTE).rateUpload(50 * KB).rateDownload(10 * MB)//
+										.peersGettingFromUs(5).peersSendingToUs(10)//
 										.uploadRatio(1.6).status(4).build(),
 								TorrentFactory.init().id(6).name("torrent.2")//
 										.leftUntilDone(5 * KB).sizeWhenDone(1 * MB + 100 * KB)//
 										.eta(7 * HOUR + 59 * MINUTE).rateUpload(5 * KB).rateDownload(10 * MB)//
+										.peersGettingFromUs(5).peersSendingToUs(10)//
 										.uploadRatio(1.6).status(6).build())
 						.build())//
 				.build();
@@ -95,6 +100,23 @@ public class ListTelegramResponseProcessorTest {
 		String actual = processor.produceMessage(obj);
 
 		assertEqualsWithLogs(expected.toString(), actual);
+	}
+
+	@Test
+	public void testEtaUnknown() {
+
+		JSONObject obj = Json.init()//
+				.put("arguments", Json.init()//
+						.putJSONArray("torrents", TorrentFactory.init().id(5).name("torrent.1")//
+								.leftUntilDone(5 * KB).sizeWhenDone(1 * MB + 100 * KB)//
+								.eta(-1).rateUpload(5 * KB).rateDownload(10 * MB)//
+								.uploadRatio(1.6).status(4).build()
+
+						).build())//
+				.build();
+
+		String actual = processor.produceMessage(obj);
+		assertThat(actual, CoreMatchers.containsString("ETA: Unknown"));
 	}
 
 	protected String beforeTorrent() {

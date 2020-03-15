@@ -12,38 +12,46 @@ public class TorrentWrapper {
 	}
 
 	public Long getId() {
-		return torrent.getLong("id");
+		return torrent.optLong("id");
 	}
 
 	public String getName() {
-		return torrent.getString("name");
+		return torrent.optString("name");
 	}
 
 	public Long getLeftUntilDone() {
-		return torrent.getLong("leftUntilDone");
+		return torrent.optLong("leftUntilDone");
 	}
 
 	public Long getSizeWhenDone() {
-		return torrent.getLong("sizeWhenDone");
+		return torrent.optLong("sizeWhenDone");
 	}
 
 	public Long getEta() {
-		return torrent.getLong("eta");
+		return torrent.optLong("eta");
 	}
 
 	public Double getRateUpload() {
-		return torrent.getDouble("rateUpload");
+		return torrent.optDouble("rateUpload");
 	}
 
 	public Double getRateDownload() {
-		return torrent.getDouble("rateDownload");
+		return torrent.optDouble("rateDownload");
 	}
 
 	public Integer getStatus() {
-		return torrent.getInt("status");
+		return torrent.optInt("status");
 	}
 
 	public Double getUploadRatio() {
-		return torrent.getDouble("uploadRatio");
+		return torrent.optDouble("uploadRatio");
+	}
+
+	public Integer getPeersGettingFromUs() {
+		return torrent.optInt("peersGettingFromUs");
+	}
+
+	public Integer getPeersSendingToUs() {
+		return torrent.optInt("peersSendingToUs");
 	}
 }

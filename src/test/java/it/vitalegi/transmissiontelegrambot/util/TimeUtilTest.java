@@ -18,6 +18,11 @@ public class TimeUtilTest {
 	}
 
 	@Test
+	void testUnknown() {
+		assertEquals("Unknown", TimeUtil.eta(-1));
+	}
+
+	@Test
 	void test30s() {
 		assertEquals("30s", TimeUtil.eta(30));
 	}

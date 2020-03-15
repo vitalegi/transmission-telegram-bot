@@ -6,6 +6,9 @@ public class TimeUtil {
 	public static final int DAY = 24 * HOUR;
 
 	public static String eta(long eta) {
+		if (eta == -1) {
+			return "Unknown";
+		}
 		if (eta < MINUTE) {
 			return eta + "s";
 		}

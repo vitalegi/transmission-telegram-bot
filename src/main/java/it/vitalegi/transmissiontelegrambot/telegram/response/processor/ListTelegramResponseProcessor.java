@@ -78,7 +78,7 @@ public class ListTelegramResponseProcessor extends AbstractTelegramResponseProce
 		sb.append(formatString("Ratio %s Size %s Missing %s Status %s\n", //
 				BytesUtil.ratio(torrent.getLeftUntilDone(), torrent.getSizeWhenDone()), //
 				BytesUtil.bytes(torrent.getSizeWhenDone()), BytesUtil.bytes(torrent.getLeftUntilDone()), //
-				TransmissionUtil.getStatus(torrent.getStatus())));
+				TransmissionUtil.getStatus(torrent)));
 
 		sb.append(formatString("ETA: %s Up/Down: %s/%s Ratio: %s\n", //
 				TimeUtil.eta(torrent.getEta()), BytesUtil.speed(torrent.getRateUpload()),
