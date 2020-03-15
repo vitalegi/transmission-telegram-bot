@@ -11,13 +11,6 @@ import it.vitalegi.transmissiontelegrambot.telegram.request.RequestWrapper;
 @Service
 public class ListTelegramRequestProcessor extends AbstractTelegramRequestProcessor {
 
-	public static final String CMD = "list";
-
-	@Override
-	public boolean match(RequestWrapper request) {
-		return matchFirstTokenCaseInsensitive(request, CMD);
-	}
-
 	@Override
 	public Action process(RequestWrapper request) {
 		Action action = new Action();

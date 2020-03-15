@@ -1,6 +1,8 @@
 package it.vitalegi.transmissiontelegrambot.transmission.http;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,11 +11,15 @@ import java.util.UUID;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,11 +38,9 @@ public class HttpClientCallerImpl implements HttpClientCaller {
 
 		String id = UUID.randomUUID().toString();
 
-		try (CloseableHttpClient httpClient = HttpClientBuilder.create()//
-				.addInterceptorLast(new HttpClientLoggerRequestInterceptor(id))//
-				.build()) {
+		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+			logRequest(id, request);
 			CloseableHttpResponse response = httpClient.execute(request);
-
 			HttpResponseWrapperImpl responseWrapper = process(response);
 			logResponse(id, responseWrapper);
 			return responseWrapper;
@@ -52,14 +56,36 @@ public class HttpClientCallerImpl implements HttpClientCaller {
 		}
 	}
 
+	protected void logRequest(String id, HttpRequest request) {
+		log.trace("{} REQUEST -------------------", id);
+		log.trace("{} URL: {}", id, request.getRequestLine().getUri());
+		for (Header header : request.getAllHeaders()) {
+			log.trace("{} Header: {}={}", id, header.getName(), header.getValue());
+		}
+		if (request instanceof HttpEntityEnclosingRequest) {
+			HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
+			String payload = toString(entity);
+
+			try {
+				JSONObject obj = new JSONObject(payload);
+				log.trace("{} Body: {}", id, obj.toString());
+			} catch (Exception e) {
+				log.trace("{} Body: not json, skip logging", id);
+			}
+
+		}
+		log.trace("{} ---------------------------", id);
+	}
+
 	protected void logResponse(String id, HttpResponseWrapper responseWrapper) {
-		log.info("{} RESPONSE-------------------", id);
-		log.info("{} Status: {}, {}", id, responseWrapper.getStatus(), responseWrapper.getReasonPhrase());
+		log.trace("{} RESPONSE-------------------", id);
+		log.trace("{} Status: {}, {}", id, responseWrapper.getStatus(), responseWrapper.getReasonPhrase());
 		responseWrapper.getHeaders().entrySet().forEach(h -> {
-			log.info("{} Header: {}={}", id, h.getKey(), h.getValue());
+			log.trace("{} Header: {}={}", id, h.getKey(), h.getValue());
 		});
-		log.info("{} Body:\n{}", id, responseWrapper.getPayload());
-		log.info("{} ---------------------------", id);
+		byte[] payload = responseWrapper.getPayload();
+		log.trace("{} Body: {}", id, new String(payload));
+		log.trace("{} ---------------------------", id);
 	}
 
 	protected HttpResponseWrapperImpl process(CloseableHttpResponse response) {
@@ -75,5 +101,21 @@ public class HttpClientCallerImpl implements HttpClientCaller {
 		}
 		byte[] payload = getPayload(response.getEntity());
 		return new HttpResponseWrapperImpl(status, reasonPhrase, headers, payload);
+	}
+
+	protected String toString(HttpEntity entity) {
+		ContentType contentType = ContentType.getOrDefault(entity);
+		try {
+			EntityUtils.toString(entity, contentType.getCharset());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		OutputStream os = new ByteArrayOutputStream();
+		try {
+			entity.writeTo(os);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return os.toString();
 	}
 }

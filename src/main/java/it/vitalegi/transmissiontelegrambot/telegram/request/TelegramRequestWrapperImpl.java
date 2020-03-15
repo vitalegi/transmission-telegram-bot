@@ -93,4 +93,9 @@ public class TelegramRequestWrapperImpl implements RequestWrapper {
 	public List<String> tokenizeText() {
 		return StringUtil.tokenize(getText());
 	}
+
+	@Override
+	public Long getChatId() {
+		return message.getChatId();
+	}
 }

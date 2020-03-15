@@ -15,4 +15,6 @@ public interface RequestWrapper {
 	public boolean hasText();
 
 	public List<String> tokenizeText();
+
+	Long getChatId();
 }

@@ -1,6 +1,6 @@
 package it.vitalegi.transmissiontelegrambot.telegram.response.processor;
 
-import java.text.MessageFormat;
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -9,22 +9,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import it.vitalegi.transmissiontelegrambot.action.Action;
-import it.vitalegi.transmissiontelegrambot.telegram.TelegramHandlers;
+import it.vitalegi.transmissiontelegrambot.telegram.SendMessageWrapper;
 import it.vitalegi.transmissiontelegrambot.telegram.request.RequestWrapper;
+import it.vitalegi.transmissiontelegrambot.transmission.TorrentWrapper;
+import it.vitalegi.transmissiontelegrambot.util.BytesUtil;
+import it.vitalegi.transmissiontelegrambot.util.TimeUtil;
+import it.vitalegi.transmissiontelegrambot.util.TransmissionUtil;
 
 @Service
-public class ListTelegramResponseProcessor {
-
-	public static final String CMD = "list";
+public class ListTelegramResponseProcessor extends AbstractTelegramResponseProcessor {
 
 	@Autowired
-	TelegramHandlers telegramHandlers;
+	SendMessageWrapper sendMessageWrapper;
 
-	public boolean match(RequestWrapper request, Action action, JSONObject response) {
-		return matchFirstTokenCaseInsensitive(request, CMD);
+	@Override
+	public void process(RequestWrapper request, Action action, JSONObject response) {
+
+		String formattedMessage = produceMessage(response);
+		sendMessageWrapper.sendHtmlMessage(request.getChatId(), formattedMessage);
 	}
 
-	public String process(JSONObject response) {
+	protected String produceMessage(JSONObject response) {
 
 		JSONObject args = response.getJSONObject("arguments");
 		JSONArray torrents = args.getJSONArray("torrents");
@@ -32,12 +37,24 @@ public class ListTelegramResponseProcessor {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < torrents.length(); i++) {
 			JSONObject torrent = torrents.getJSONObject(i);
-			sb.append(formatTorrent(torrent));
+			sb.append(formatTorrent(new TorrentWrapper(torrent)));
 		}
 
-		String[] values = new String[] { "error", "errorString", "eta", "id", "isFinished", "leftUntilDone", "name",
-				"peersGettingFromUs", "peersSendingToUs", "rateDownload", "rateUpload", "sizeWhenDone", "status",
-				"uploadRatio" };
+		double sumSize = 0;
+		double sumUploadRatio = 0;
+		double sumDownloadRatio = 0;
+		for (int i = 0; i < torrents.length(); i++) {
+			TorrentWrapper torrent = new TorrentWrapper(torrents.getJSONObject(i));
+			sumSize += torrent.getSizeWhenDone();
+			sumUploadRatio += torrent.getRateUpload();
+			sumDownloadRatio += torrent.getRateDownload();
+		}
+
+		sb.append(beforeTotal());
+		sb.append(formatString("Sum: Size %s, Up/Down %s/%s", //
+				BytesUtil.bytes(sumSize), BytesUtil.speed(sumUploadRatio), BytesUtil.speed(sumDownloadRatio)));
+		sb.append(afterTotal());
+
 		return sb.toString();
 	}
 
@@ -50,26 +67,46 @@ public class ListTelegramResponseProcessor {
 		return expected.toUpperCase().equals(actual.toUpperCase());
 	}
 
-	protected String formatTorrent(JSONObject torrent) {
+	protected String formatTorrent(TorrentWrapper torrent) {
 
 		StringBuilder sb = new StringBuilder();
 
-		long id = torrent.getLong("id");
-		String name = torrent.getString("name");
-		double missing = torrent.getDouble("leftUntilDone");
-		double size = torrent.getDouble("sizeWhenDone");
-		long ratio = Math.round(100 * (size - missing) / size);
+		sb.append(beforeTorrent());
 
-		sb.append(formatString("ID %s - %s\n", id, name));
-		sb.append(formatString("Ratio %d Size %f Missing %f\n", 100 * (size - missing) / size, size, missing));
-//		sb.append(formatString("ETA: %s Up/Down: %d/%d Ratio: %d\n", t, "eta", "rateUpload", "rateDownload",
-//				"uploadRatio"));
-//		sb.append(formatString("Status: %d\n\n", t, "status"));
+		sb.append(formatString("ID %s - %s\n", torrent.getId(), torrent.getName()));
+
+		sb.append(formatString("Ratio %s Size %s Missing %s Status %s\n", //
+				BytesUtil.ratio(torrent.getLeftUntilDone(), torrent.getSizeWhenDone()), //
+				BytesUtil.bytes(torrent.getSizeWhenDone()), BytesUtil.bytes(torrent.getLeftUntilDone()), //
+				TransmissionUtil.getStatus(torrent.getStatus())));
+
+		sb.append(formatString("ETA: %s Up/Down: %s/%s Ratio: %s\n", //
+				TimeUtil.eta(torrent.getEta()), BytesUtil.speed(torrent.getRateUpload()),
+				BytesUtil.speed(torrent.getRateDownload()),
+				BytesUtil.ratio(BigDecimal.valueOf(torrent.getUploadRatio()))));
+
+		sb.append(afterTorrent());
 
 		return sb.toString();
 	}
 
 	protected String formatString(String pattern, Object... arguments) {
-		return MessageFormat.format(pattern, arguments);
+		return String.format(pattern, arguments);
+	}
+
+	protected String beforeTorrent() {
+		return "<pre>\n";
+	}
+
+	protected String afterTorrent() {
+		return "</pre>\n";
+	}
+
+	protected String beforeTotal() {
+		return "<pre>\n";
+	}
+
+	protected String afterTotal() {
+		return "</pre>";
 	}
 }

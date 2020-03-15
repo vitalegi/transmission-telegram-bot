@@ -1,4 +1,4 @@
-package it.vitalegi.transmissiontelegrambot;
+package it.vitalegi.transmissiontelegrambot.telegram;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,18 +9,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import it.vitalegi.transmissiontelegrambot.SpringTestConfig;
 import it.vitalegi.transmissiontelegrambot.action.Action;
 import it.vitalegi.transmissiontelegrambot.action.ActionMethod;
 import it.vitalegi.transmissiontelegrambot.action.RequestFields;
+import it.vitalegi.transmissiontelegrambot.telegram.TelegramDispatcherImpl;
+import it.vitalegi.transmissiontelegrambot.telegram.request.RequestWrapper;
 import it.vitalegi.transmissiontelegrambot.telegram.request.RequestWrapperFactory;
 import it.vitalegi.transmissiontelegrambot.util.Json;
 import it.vitalegi.transmissiontelegrambot.util.JsonComparator;
 
 @SpringBootTest(classes = SpringTestConfig.class)
-public class TelegramRequestToActionServiceTest {
+public class TelegramRequestDispatcherTest {
 
 	@Autowired
-	TelegramRequestToActionServiceImpl service;
+	TelegramDispatcherImpl service;
 
 	@Autowired
 	RequestWrapperFactory requestFactory;
@@ -30,7 +33,8 @@ public class TelegramRequestToActionServiceTest {
 
 	@Test
 	void testRequestedAddResultsAdd() throws Exception {
-		Action action = service.process(requestFactory.getInstance("filename123.txt", "hello world".getBytes()));
+		RequestWrapper request = requestFactory.getInstance("filename123.txt", "hello world".getBytes());
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
@@ -40,7 +44,8 @@ public class TelegramRequestToActionServiceTest {
 
 	@Test
 	void testRequestedDeleteResultsRemove() throws Exception {
-		Action action = service.process(requestFactory.getInstance("delete 5"));
+		RequestWrapper request = requestFactory.getInstance("delete 5");
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
@@ -53,7 +58,8 @@ public class TelegramRequestToActionServiceTest {
 
 	@Test
 	void testRequestedInfoResultsInfo() throws Exception {
-		Action action = service.process(requestFactory.getInstance("info 5"));
+		RequestWrapper request = requestFactory.getInstance("info 5");
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
@@ -62,42 +68,38 @@ public class TelegramRequestToActionServiceTest {
 		assertEquals(1, action.getArguments().getJSONArray(RequestFields.IDS).length());
 		assertEquals("5", action.getArguments().getJSONArray(RequestFields.IDS).get(0));
 
-		JSONObject expectedArgs = Json.init()
-				.put("fields",
-						new String[] { "activityDate", "addedDate", "bandwidthPriority", "comment", "corruptEver",
-								"creator", "dateCreated", "desiredAvailable", "doneDate", "downloadDir",
-								"downloadedEver", "downloadLimit", "downloadLimited", "error", "errorString", "eta",
-								"hashString", "haveUnchecked", "haveValid", "honorsSessionLimits", "id", "isFinished",
-								"isPrivate", "leftUntilDone", "magnetLink", "name", "peersConnected",
-								"peersGettingFromUs", "peersSendingToUs", "peer-limit", "pieceCount", "pieceSize",
-								"rateDownload", "rateUpload", "recheckProgress", "secondsDownloading", "secondsSeeding",
-								"seedRatioMode", "seedRatioLimit", "sizeWhenDone", "startDate", "status", "totalSize",
-								"uploadedEver", "uploadLimit", "uploadLimited", "webseeds", "webseedsSendingToUs" })
-				.putJSONArray("ids", "5")//
+		JSONObject expectedArgs = Json.init().putJSONArray("fields", //
+				"activityDate", "addedDate", "bandwidthPriority", "comment", "corruptEver", "creator", "dateCreated",
+				"desiredAvailable", "doneDate", "downloadDir", "downloadedEver", "downloadLimit", "downloadLimited",
+				"error", "errorString", "eta", "hashString", "haveUnchecked", "haveValid", "honorsSessionLimits", "id",
+				"isFinished", "isPrivate", "leftUntilDone", "magnetLink", "name", "peersConnected",
+				"peersGettingFromUs", "peersSendingToUs", "peer-limit", "pieceCount", "pieceSize", "rateDownload",
+				"rateUpload", "recheckProgress", "secondsDownloading", "secondsSeeding", "seedRatioMode",
+				"seedRatioLimit", "sizeWhenDone", "startDate", "status", "totalSize", "uploadedEver", "uploadLimit",
+				"uploadLimited", "webseeds", "webseedsSendingToUs").putJSONArray("ids", "5")//
 				.build();
 		jsonComparator.assertEquals(expectedArgs, action.getArguments());
 	}
 
 	@Test
 	void testRequestedListResultsList() throws Exception {
-		Action action = service.process(requestFactory.getInstance("list"));
+		RequestWrapper request = requestFactory.getInstance("list");
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertEquals(ActionMethod.GET, action.getMethod());
 		assertNotNull(action.getArguments());
 
-		JSONObject expectedArgs = Json.init()
-				.put("fields",
-						new String[] { "error", "errorString", "eta", "id", "isFinished", "leftUntilDone", "name",
-								"peersGettingFromUs", "peersSendingToUs", "rateDownload", "rateUpload", "sizeWhenDone",
-								"status", "uploadRatio" })
-				.build();
+		JSONObject expectedArgs = Json.init().putJSONArray("fields", //
+				"error", "errorString", "eta", "id", "isFinished", "leftUntilDone", "name", "peersGettingFromUs",
+				"peersSendingToUs", "rateDownload", "rateUpload", "sizeWhenDone", "status", "uploadRatio").build();
 		jsonComparator.assertEquals(expectedArgs, action.getArguments());
 	}
 
 	@Test
 	void testRequestedListWithSpacesResultsList() throws Exception {
-		Action action = service.process(requestFactory.getInstance("   list    "));
+		RequestWrapper request = requestFactory.getInstance("   list    ");
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
@@ -107,7 +109,8 @@ public class TelegramRequestToActionServiceTest {
 
 	@Test
 	void testRequestedRemoveResultsRemove() throws Exception {
-		Action action = service.process(requestFactory.getInstance("remove 5"));
+		RequestWrapper request = requestFactory.getInstance("remove 5");
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
@@ -121,7 +124,8 @@ public class TelegramRequestToActionServiceTest {
 
 	@Test
 	void testRequestedStartResultsStart() throws Exception {
-		Action action = service.process(requestFactory.getInstance("start 5"));
+		RequestWrapper request = requestFactory.getInstance("start 5");
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());
@@ -133,7 +137,8 @@ public class TelegramRequestToActionServiceTest {
 
 	@Test
 	void testRequestedStopResultsStop() throws Exception {
-		Action action = service.process(requestFactory.getInstance("stop 5"));
+		RequestWrapper request = requestFactory.getInstance("stop 5");
+		Action action = service.processRequest(request);
 
 		assertNotNull(action);
 		assertNotNull(action.getArguments());

@@ -49,7 +49,25 @@ public class Json {
 		return this;
 	}
 
-	public Json put(String name, int value) {
+	public Json put(String name, Integer value) {
+		try {
+			json.put(name, value);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return this;
+	}
+
+	public Json put(String name, Long value) {
+		try {
+			json.put(name, value);
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return this;
+	}
+
+	public Json put(String name, Double value) {
 		try {
 			json.put(name, value);
 		} catch (JSONException e) {
@@ -76,16 +94,4 @@ public class Json {
 		return this;
 	}
 
-	public Json put(String name, String[] values) {
-		try {
-			JSONArray array = new JSONArray();
-			for (String value : values) {
-				array.put(value);
-			}
-			json.put(name, array);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
-		return this;
-	}
 }

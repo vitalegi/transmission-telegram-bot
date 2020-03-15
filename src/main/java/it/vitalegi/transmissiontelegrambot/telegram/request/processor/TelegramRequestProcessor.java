@@ -5,7 +5,5 @@ import it.vitalegi.transmissiontelegrambot.telegram.request.RequestWrapper;
 
 public interface TelegramRequestProcessor {
 
-	public boolean match(RequestWrapper request);
-
 	public Action process(RequestWrapper request);
 }

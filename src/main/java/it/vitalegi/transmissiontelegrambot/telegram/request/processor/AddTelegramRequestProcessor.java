@@ -19,11 +19,6 @@ public class AddTelegramRequestProcessor extends AbstractTelegramRequestProcesso
 	}
 
 	@Override
-	public boolean match(RequestWrapper request) {
-		return request.hasDocument();
-	}
-
-	@Override
 	public Action process(RequestWrapper request) {
 		Action action = new Action();
 		action.setMethod(ActionMethod.ADD);

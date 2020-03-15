@@ -51,4 +51,10 @@ public class RequestWrapperImpl implements RequestWrapper {
 	public List<String> tokenizeText() {
 		return StringUtil.tokenize(text);
 	}
+
+	@Override
+	public Long getChatId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
