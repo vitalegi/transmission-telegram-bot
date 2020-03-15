@@ -1,5 +1,6 @@
 package it.vitalegi.transmissiontelegrambot.telegram.request;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -16,6 +17,13 @@ public class RequestWrapperTest {
 	@Test
 	void testTokenizerEmptyTextShouldGiveEmptyList() {
 		List<String> tokenized = new RequestWrapperImpl("").tokenizeText();
+		assertNotNull(tokenized);
+		assertEquals(0, tokenized.size());
+	}
+
+	@Test
+	void testTokenizerNullTextShouldGiveEmptyList() {
+		List<String> tokenized = new RequestWrapperImpl(null).tokenizeText();
 		assertNotNull(tokenized);
 		assertEquals(0, tokenized.size());
 	}

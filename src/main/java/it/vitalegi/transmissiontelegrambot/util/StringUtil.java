@@ -16,6 +16,9 @@ public class StringUtil {
 
 	public static List<String> tokenize(String text) {
 		List<String> tokenized = new ArrayList<>();
+		if (isNullOrEmpty(text)) {
+			return tokenized;
+		}
 		try (Scanner scan = new Scanner(text)) {
 			scan.forEachRemaining(tokenized::add);
 		}
